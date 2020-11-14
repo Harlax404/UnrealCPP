@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"D:\\IIM\\4 Annee\\Unreal\\UnrealCPP\\UnrealCPP\\Source\\UnrealCPP\\UnrealCPP.Build.cs",
+		"D:\\IIM\\4 Annee\\Unreal\\UnrealCPP\\UnrealCPP\\Source\\UnrealCPP.Target.cs",
+		"D:\\IIM\\4 Annee\\Unreal\\UnrealCPP\\UnrealCPP\\Source\\UnrealCPPEditor.Target.cs"
+	],
+	"EngineVersion": "4.25.4"
+}

@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "UnrealCPP",
+			"Path": "D:\\IIM\\4 Annee\\Unreal\\UnrealCPP\\UnrealCPP\\Source\\UnrealCPP.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "UnrealCPPEditor",
+			"Path": "D:\\IIM\\4 Annee\\Unreal\\UnrealCPP\\UnrealCPP\\Source\\UnrealCPPEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}
