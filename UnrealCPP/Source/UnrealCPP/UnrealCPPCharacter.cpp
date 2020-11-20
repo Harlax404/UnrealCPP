@@ -177,8 +177,7 @@ void AUnrealCPPCharacter::PickObject()
 	if (Hit.GetActor())
 	{
 		PhysicsHandle->GrabComponentAtLocation(Hit.Component.Get(), Hit.BoneName, Hit.GetActor()->GetActorLocation());
-		Hit.GetComponent()->GetBodyInstance()->bLockXRotation = true;
-		Hit.GetComponent()->GetBodyInstance()->bLockYRotation = true;
+		//Hit.GetComponent()->GetBodyInstance()->bLockRotation = true; // It seems it's not working well
 		isHoldingObject = true;
 	}
 
@@ -193,12 +192,15 @@ void AUnrealCPPCharacter::DropObject()
 
 void AUnrealCPPCharacter::Shoot()
 {
-	UE_LOG(LogTemp, Warning, TEXT("I am shooting"));
-	FActorSpawnParameters parameters;
-	FTransform tmpPos = GetActorTransform();
-	tmpPos.SetLocation(FollowCamera->GetComponentRotation().Vector() * 200.0f + GetActorLocation());
+	//UE_LOG(LogTemp, Warning, TEXT("I am shooting"));
 
-	APaintBullet* bullet = GetWorld()->SpawnActor<APaintBullet>(APaintBullet::StaticClass(), tmpPos, parameters);
+	if (!isHoldingObject)
+	{
+		FActorSpawnParameters parameters;
+		FTransform tmpPos = GetActorTransform();
+		tmpPos.SetLocation(tmpPos.GetLocation() + 100 * GetActorForwardVector());
+		APaintBullet* bullet = GetWorld()->SpawnActor<APaintBullet>(APaintBullet::StaticClass(), tmpPos, parameters);
+	}
 }
 
 void AUnrealCPPCharacter::Destroyed()
@@ -254,7 +256,7 @@ void AUnrealCPPCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const FVector grabVector(80, 0, 0);
+	const FVector grabVector(100, 0, 0);
 	const FTransform grabLocation(grabVector);
 
 	GrabLocation->SetRelativeTransform(grabLocation);

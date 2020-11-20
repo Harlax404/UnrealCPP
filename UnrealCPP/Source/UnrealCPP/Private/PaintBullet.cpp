@@ -59,27 +59,24 @@ void APaintBullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	if (OtherActor != nullptr && OtherComponent != nullptr)
 	{
 		FActorSpawnParameters SpawnParams;
-		ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.Location, Hit.Normal.Rotation() /*Hit.GetActor()->GetActorTransform().GetRotation().Rotator()*/, SpawnParams);
+		ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.Location, Hit.GetActor()->GetActorTransform().GetRotation().Rotator(), SpawnParams);
 		
 		UE_LOG(LogTemp, Warning, TEXT("Projectile Collided"));
 
 		if (decal)
 		{
-			decal->SetDecalMaterial(PaintBulletDecal);
-
 			int random = FMath::RandRange(0, 3);
 			FLinearColor color = FLinearColor::MakeRandomColor();
-			//UMaterialInstanceDynamic* dynMaterial = UMaterialInstanceDynamic::Create(PaintBulletDecal, this);
-
-			UMaterialInstanceDynamic* dynMaterial = decal->CreateDynamicMaterialInstance();
+			UMaterialInstanceDynamic* dynMaterial = UMaterialInstanceDynamic::Create(PaintBulletDecal, this);
 			
 			dynMaterial->SetScalarParameterValue("Frame", random);
 			dynMaterial->SetVectorParameterValue("Color", color);
-				
 			
+			decal->SetDecalMaterial(dynMaterial);
+
 			decal->SetLifeSpan(3.0f);
 			decal->GetDecal()->DecalSize = FVector(64.0f, 64.0f, 64.0f);
-			//decal->SetActorRotation(Hit.Normal.Rotation());
+			decal->SetActorRotation(Hit.Normal.Rotation());
 		}
 	}
 	this->Destroy();
