@@ -13,3 +13,17 @@ AUnrealCPPGameMode::AUnrealCPPGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 }
+
+
+void AUnrealCPPGameMode::CreateNewCharacter(AController* controller, FVector spawnLocation, FRotator spawnRotation)
+{
+    FTimerHandle handle;
+    GetWorld()->GetTimerManager().SetTimer(handle, [this, controller, spawnLocation, spawnRotation]()
+        {
+            APawn* Pawn = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, spawnLocation, spawnRotation);
+            if (Pawn)
+            {
+                controller->Possess(Pawn);
+            }
+        }, 2, false);
+}

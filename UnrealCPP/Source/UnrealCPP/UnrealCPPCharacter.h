@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+
 #include "UnrealCPPCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -68,5 +71,60 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+
+	/* Mes Ajouts */
+	// Pick and Drop Object
+	virtual void Tick(float DeltaTime) override;
+	//virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class UPhysicsHandleComponent* PhysicsHandle;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class USceneComponent* GrabLocation;
+
+public:
+	bool isHoldingObject = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		float maxDistanceToGrab = 500;
+
+	void PickAndDrop();
+	void PickObject();
+	void DropObject();
+
+	// Shoot
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<AActor> PaintBullet;
+
+	void Shoot();
+
+	// Death ad Respawn
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<AActor> FireEffect;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		FVector spawnLocation;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		FRotator spawnRotation;
+
+	virtual void Destroyed() override;
+
+	// Crouch
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		bool blabla = false;
+
+	void MyCrouch();
+
+	// Strafe
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		bool isStrafing = false;
+
+	UCharacterMovementComponent* movement = nullptr;
+
+	void ActivateStrafe();
+	void DeactivateSrafe();
 };
 

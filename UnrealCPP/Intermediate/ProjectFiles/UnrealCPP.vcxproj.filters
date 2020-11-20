@@ -3,7 +3,7 @@
   <ItemGroup>
     <None Include="..\..\UnrealCPP.uproject" />
     <Filter Include="Source">
-      <UniqueIdentifier>{B06C559B-94B7-4933-9635-E13B8CE19F00}</UniqueIdentifier>
+      <UniqueIdentifier>{AA0AFC2E-2638-4AB5-BB4A-36E358E8732A}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Source\UnrealCPP.Target.cs">
       <Filter>Source</Filter>
@@ -12,7 +12,7 @@
       <Filter>Source</Filter>
     </None>
     <Filter Include="Config">
-      <UniqueIdentifier>{4654BD65-5DD5-437D-B842-6354D1335519}</UniqueIdentifier>
+      <UniqueIdentifier>{402835F9-EEB5-4553-A8D5-1D1B12659E1F}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Config\DefaultEditor.ini">
       <Filter>Config</Filter>
@@ -30,7 +30,7 @@
       <Filter>Config</Filter>
     </None>
     <Filter Include="Source\UnrealCPP">
-      <UniqueIdentifier>{A8D82FC0-D935-4926-84AA-0A233FB44E80}</UniqueIdentifier>
+      <UniqueIdentifier>{6F0E60B0-ABB2-44CE-AC67-9EED922AD244}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Source\UnrealCPP\UnrealCPP.Build.cs">
       <Filter>Source\UnrealCPP</Filter>
@@ -52,6 +52,24 @@
     </ClCompile>
     <ClInclude Include="..\..\Source\UnrealCPP\UnrealCPPGameMode.h">
       <Filter>Source\UnrealCPP</Filter>
+    </ClInclude>
+    <Filter Include="Source\UnrealCPP\Private">
+      <UniqueIdentifier>{9868F2A2-BB94-428F-A144-6ADBEBBE06AD}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\UnrealCPP\Private\PaintBullet.cpp">
+      <Filter>Source\UnrealCPP\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\UnrealCPP\Private\TriggerStreamZone.cpp">
+      <Filter>Source\UnrealCPP\Private</Filter>
+    </ClCompile>
+    <Filter Include="Source\UnrealCPP\Public">
+      <UniqueIdentifier>{A1BA08E6-9D0C-45B1-A391-F82FF00907A1}</UniqueIdentifier>
+    </Filter>
+    <ClInclude Include="..\..\Source\UnrealCPP\Public\PaintBullet.h">
+      <Filter>Source\UnrealCPP\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\UnrealCPP\Public\TriggerStreamZone.h">
+      <Filter>Source\UnrealCPP\Public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

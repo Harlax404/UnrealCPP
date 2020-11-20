@@ -9,6 +9,10 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 
+#include "Public/PaintBullet.h"
+#include "UnrealCPPGameMode.h"
+#include "DrawDebugHelpers.h"
+
 //////////////////////////////////////////////////////////////////////////
 // AUnrealCPPCharacter
 
@@ -45,6 +49,12 @@ AUnrealCPPCharacter::AUnrealCPPCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	// Mes Ajouts
+	GrabLocation = CreateDefaultSubobject<USceneComponent>(TEXT("GrabLocation"));
+	GrabLocation->SetupAttachment(this->GetRootComponent());
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
+	movement = GetCharacterMovement();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,6 +84,14 @@ void AUnrealCPPCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AUnrealCPPCharacter::OnResetVR);
+
+
+	/* Mes ajouts */
+	PlayerInputComponent->BindAction("PickAndDrop", IE_Pressed, this, &AUnrealCPPCharacter::PickAndDrop);
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AUnrealCPPCharacter::Shoot);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AUnrealCPPCharacter::MyCrouch);
+	PlayerInputComponent->BindAction("Strafing", IE_Pressed, this, &AUnrealCPPCharacter::ActivateStrafe);
+	PlayerInputComponent->BindAction("Strafing", IE_Released, this, &AUnrealCPPCharacter::DeactivateSrafe);
 }
 
 
@@ -132,3 +150,124 @@ void AUnrealCPPCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+/* Mes ajouts */
+void AUnrealCPPCharacter::PickAndDrop()
+{
+	if (isHoldingObject)
+		DropObject();
+	else PickObject();
+}
+
+void AUnrealCPPCharacter::PickObject()
+{
+	FVector Loc;
+	FRotator Rot;
+	FHitResult Hit;
+
+	GetController()->GetPlayerViewPoint(Loc, Rot);
+
+	FVector Start = Loc;
+	FVector End = Start + (Rot.Vector() * maxDistanceToGrab);
+
+	FCollisionQueryParams TraceParams;
+
+	GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ECC_PhysicsBody, TraceParams);
+
+	if (Hit.GetActor())
+	{
+		PhysicsHandle->GrabComponentAtLocation(Hit.Component.Get(), Hit.BoneName, Hit.GetActor()->GetActorLocation());
+		Hit.GetComponent()->GetBodyInstance()->bLockXRotation = true;
+		Hit.GetComponent()->GetBodyInstance()->bLockYRotation = true;
+		isHoldingObject = true;
+	}
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true);
+}
+
+void AUnrealCPPCharacter::DropObject()
+{
+	PhysicsHandle->ReleaseComponent();
+	isHoldingObject = false;
+}
+
+void AUnrealCPPCharacter::Shoot()
+{
+	UE_LOG(LogTemp, Warning, TEXT("I am shooting"));
+	FActorSpawnParameters parameters;
+	FTransform tmpPos = GetActorTransform();
+	tmpPos.SetLocation(FollowCamera->GetComponentRotation().Vector() * 200.0f + GetActorLocation());
+
+	APaintBullet* bullet = GetWorld()->SpawnActor<APaintBullet>(APaintBullet::StaticClass(), tmpPos, parameters);
+}
+
+void AUnrealCPPCharacter::Destroyed()
+{
+	// Spawn Effect
+	const FVector deathLocation = GetActorLocation();
+	const FRotator deathRotation = GetActorRotation();
+	AActor* fireEffect = GetWorld()->SpawnActor<AActor>(FireEffect, deathLocation, deathRotation);
+	fireEffect->SetLifeSpan(2);
+
+	// Make Spawn New player
+	AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+	AUnrealCPPGameMode* GameMode = Cast<AUnrealCPPGameMode>(GM);
+	if (GameMode)
+	{
+		GameMode->CreateNewCharacter(GetController(), spawnLocation, spawnRotation);
+	}
+
+	// Get Destroyed
+	Super::Destroyed();
+}
+
+void AUnrealCPPCharacter::MyCrouch()
+{
+	if (blabla)
+	{
+		blabla = false;
+		UnCrouch();
+	}
+	else
+	{
+		blabla = true;
+		Crouch();
+	}
+}
+
+void AUnrealCPPCharacter::ActivateStrafe()
+{
+	isStrafing = true;
+	movement->bUseControllerDesiredRotation = true;
+	movement->bOrientRotationToMovement = false;
+	UE_LOG(LogTemp, Warning, TEXT("I am strafing"));
+}
+
+void AUnrealCPPCharacter::DeactivateSrafe()
+{
+	isStrafing = false;
+	movement->bOrientRotationToMovement = true;
+	UE_LOG(LogTemp, Warning, TEXT("I am not strafing"));
+}
+
+void AUnrealCPPCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	const FVector grabVector(80, 0, 0);
+	const FTransform grabLocation(grabVector);
+
+	GrabLocation->SetRelativeTransform(grabLocation);
+	
+	PhysicsHandle->SetTargetLocation(GrabLocation->GetComponentLocation());
+	//UE_LOG(LogTemp, Warning, TEXT("GrabLocation = %f, %f, %f"), GrabLocation->GetComponentLocation().X, GrabLocation->GetComponentLocation().Y, GrabLocation->GetComponentLocation().Z);
+	//UE_LOG(LogTemp, Warning, TEXT("My location = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+}
+
+//void AUnrealCPPCharacter::BeginPlay()
+//{
+//	Super::BeginPlay();
+//
+//	const FVector grabVector(80, 0, 0);
+//	GrabLocation->SetRelativeLocation(grabVector);
+//}
