@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Public/MyGameInstance.h"
 
 #include "UnrealCPPCharacter.generated.h"
 
@@ -76,7 +77,7 @@ public:
 	/* Mes Ajouts */
 	// Pick and Drop Object
 	virtual void Tick(float DeltaTime) override;
-	//virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UPhysicsHandleComponent* PhysicsHandle;
@@ -126,5 +127,12 @@ public:
 
 	void ActivateStrafe();
 	void DeactivateSrafe();
+
+	// Save and Load
+	UMyGameInstance* gameInstance;
+	void SaveMyGame();
+
+	UFUNCTION(BlueprintCallable)
+	void LoadMyGame();
 };
 

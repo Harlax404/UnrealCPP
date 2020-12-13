@@ -12,6 +12,9 @@
 #include "Public/PaintBullet.h"
 #include "UnrealCPPGameMode.h"
 #include "DrawDebugHelpers.h"
+#include "Public/SaveGameCPP.h"
+#include "Kismet/GameplayStatics.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // AUnrealCPPCharacter
@@ -92,6 +95,9 @@ void AUnrealCPPCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AUnrealCPPCharacter::MyCrouch);
 	PlayerInputComponent->BindAction("Strafing", IE_Pressed, this, &AUnrealCPPCharacter::ActivateStrafe);
 	PlayerInputComponent->BindAction("Strafing", IE_Released, this, &AUnrealCPPCharacter::DeactivateSrafe);
+
+	PlayerInputComponent->BindAction("Save", IE_Released, this, &AUnrealCPPCharacter::SaveMyGame);
+	PlayerInputComponent->BindAction("Load", IE_Released, this, &AUnrealCPPCharacter::LoadMyGame);
 }
 
 
@@ -205,20 +211,24 @@ void AUnrealCPPCharacter::Shoot()
 
 void AUnrealCPPCharacter::Destroyed()
 {
-	// Spawn Effect
-	const FVector deathLocation = GetActorLocation();
-	const FRotator deathRotation = GetActorRotation();
-	AActor* fireEffect = GetWorld()->SpawnActor<AActor>(FireEffect, deathLocation, deathRotation);
-	fireEffect->SetLifeSpan(2);
-
-	// Make Spawn New player
-	AGameModeBase* GM = GetWorld()->GetAuthGameMode();
-	AUnrealCPPGameMode* GameMode = Cast<AUnrealCPPGameMode>(GM);
-	if (GameMode)
+	if (Controller == nullptr) return;
+	if (!Controller->CastToPlayerController()->IsPaused())
 	{
-		GameMode->CreateNewCharacter(GetController(), spawnLocation, spawnRotation);
-	}
+		// Spawn Effect
+		const FVector deathLocation = GetActorLocation();
+		const FRotator deathRotation = GetActorRotation();
+		AActor* fireEffect = GetWorld()->SpawnActor<AActor>(FireEffect, deathLocation, deathRotation);
+		fireEffect->SetLifeSpan(2);
 
+		// Make Spawn New player
+		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+		AUnrealCPPGameMode* GameMode = Cast<AUnrealCPPGameMode>(GM);
+		if (GameMode)
+		{
+			GameMode->CreateNewCharacter(GetController(), spawnLocation, spawnRotation);
+		}
+	}
+	
 	// Get Destroyed
 	Super::Destroyed();
 }
@@ -266,10 +276,77 @@ void AUnrealCPPCharacter::Tick(float DeltaTime)
 	//UE_LOG(LogTemp, Warning, TEXT("My location = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
 }
 
-//void AUnrealCPPCharacter::BeginPlay()
-//{
-//	Super::BeginPlay();
-//
-//	const FVector grabVector(80, 0, 0);
-//	GrabLocation->SetRelativeLocation(grabVector);
-//}
+void AUnrealCPPCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	gameInstance = Cast<UMyGameInstance>(GetGameInstance());
+	LoadMyGame();
+}
+
+void AUnrealCPPCharacter::LoadMyGame()
+{
+	// Retrieve and cast the USaveGame object to UMySaveGame.
+	if (USaveGameCPP* LoadedGame = Cast<USaveGameCPP>(UGameplayStatics::LoadGameFromSlot(gameInstance->SaveSlotName, gameInstance->SaveSlotIndex)))
+	{
+		// The operation was successful, so LoadedGame now contains the data we saved earlier.
+		UE_LOG(LogTemp, Warning, TEXT("LOADED: "));
+		SetActorTransform(LoadedGame->PlayerTransform);
+		//SetActorTransform(LoadedGame->PlayerTransform, true);
+	}
+
+	// Asynchrone load a test
+	// Set up the delegate.
+	/*
+	FAsyncLoadGameFromSlotDelegate LoadedDelegate;
+	// USomeUObjectClass::LoadGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData
+	LoadedDelegate.BindUObject(SomeUObjectPointer, &USomeUObjectClass::LoadGameDelegateFunction);
+	UGameplayStatics::AsyncLoadGameFromSlot(SlotName, 0, LoadedDelegate);
+	*/
+
+	/*gameInstance->LoadGame(gameInstance->SaveSlotName, gameInstance->SaveSlotIndex);
+	SetActorTransform(gameInstance->SaveGameInstance->PlayerTransform);*/
+
+}
+
+void AUnrealCPPCharacter::SaveMyGame()
+{
+	if (!movement->IsFalling())
+	{
+		if (USaveGameCPP* SaveGameInstance = Cast<USaveGameCPP>(UGameplayStatics::CreateSaveGameObject(USaveGameCPP::StaticClass())))
+		{
+			// Set data on the savegame object.			
+			SaveGameInstance->PlayerTransform = GetTransform();
+			// Save the data immediately.
+			if (UGameplayStatics::SaveGameToSlot(SaveGameInstance, gameInstance->SaveSlotName, gameInstance->SaveSlotIndex))
+			{
+				// Save succeeded.
+				UE_LOG(LogTemp, Warning, TEXT("Save Suceeded !!!!!!"));
+			}
+		}
+
+
+		//if (gameInstance != nullptr)
+		//{
+		//	UE_LOG(LogTemp, Warning, TEXT("GameInstance not null"));
+		//	if (gameInstance->SaveGameInstance != nullptr)
+		//	{
+		//		UE_LOG(LogTemp, Warning, TEXT("SaveGameInstance not null"));
+
+		//		//UE_LOG(LogTemp, Warning, TEXT("GameInstace.SaveSlotName = %s"), *FString(gameInstance->SaveSlotName));
+		//		//UE_LOG(LogTemp, Warning, TEXT("GameInstace.SaveSlotIndex = %s"), gameInstance->SaveSlotIndex);
+		//		gameInstance->SaveGameInstance->PlayerTransform = GetTransform();
+
+		//		if (UGameplayStatics::SaveGameToSlot(gameInstance->SaveGameInstance, gameInstance->SaveSlotName, gameInstance->SaveSlotIndex))
+		//		{
+		//			UE_LOG(LogTemp, Warning, TEXT("Save completed ?"));
+		//		}
+		//		//gameInstance->SaveGame(/*gameInstance->SaveSlotName, gameInstance->SaveSlotIndex*/);
+		//	}
+		//}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not Saving in Air"));
+	}
+}
